@@ -1,13 +1,13 @@
 import datetime
 import random  # For generating random numbers
-
 import discord
 from discord import Option
 from discord.ext import commands
-
-# Your bot's token
-TOKEN = ''
-
+import json
+with open('config.json', 'r') as file:
+    config = json.load(file)
+#fixed it so i dont expose the new token
+TOKEN = config["token"]
 trigger_words = ['skibidi']
 # List of allowed channel IDs for specific replies
 allowed_channels = ['1213328540586610701', '1213646258519150622', '1214684173189775370']
@@ -47,13 +47,6 @@ async def on_message(message):
                 await message.channel.send(f"But i dont. Goodbye {message.author.mention}")
         else:
             await message.reply(f"No. {counter}, bad dog {message.author.mention}.")
-
-#   # Specific replies in allowed channels for targeted users
-#   if str(message.channel.id) in allowed_channels:
-#       if str(message.author.id) in target:
-#           await message.reply("you are a meanie head.")
-#       elif str(message.author.id) in secondtarget:
-#           await message.reply("Thank you for standing with me in the face of the dictator sam. /j (obviously)")
 
     await bot.process_commands(message)
 
