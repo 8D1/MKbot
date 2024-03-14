@@ -1,61 +1,65 @@
+import datetime
+import random  # For generating random numbers
+
 import discord
-from discord.ext import commands
 from discord import Option
+from discord.ext import commands
 
 # Your bot's token
-TOKEN = 'MTE4Mzk2NDM0Nzk1ODA0NjgwMA.GN2Rs7.zkkYOztMKWgsjKBIV2erkGJrX1HcVsVdU8xt6k'
+TOKEN = ''
 
 trigger_words = ['skibidi']
-# List of blacklisted user IDs (use actual user IDs)
-blacklisted_users = ['123456789012345678', '987654321098765432']  # Example user IDs
+# List of allowed channel IDs for specific replies
+allowed_channels = ['1213328540586610701', '1213646258519150622', '1214684173189775370']
+target = ['973296824137969744']
+secondtarget = ['1184651914420428932', '265873249944993793', '1087192861734342746']
 
 # Bot setup with intents
 intents = discord.Intents.all()  # Using all intents
 bot = commands.Bot(command_prefix="/", intents=intents)
 
-counter = 0
+counter = 0  # Global message counter for "skibidi"
 user_trigger_counts = {}  # Dictionary to keep track of trigger word counts per user
-role_to_assign_id = '1214740574306041917'  # The ID of the role you want to assign
-
 
 @bot.event
 async def on_ready():
     print(f'{bot.user} is connected and ready.')
 
-
 @bot.event
 async def on_message(message):
     global counter
+
     if message.author == bot.user:
         return
 
-    user_id = str(message.author.id)
     if any(word.lower() in message.content.lower() for word in trigger_words):
         counter += 1
+        user_id = str(message.author.id)
         user_trigger_counts[user_id] = user_trigger_counts.get(user_id, 0) + 1
 
-        if user_trigger_counts[user_id] == 5:
-            await message.channel.send(f"{message.author.mention}, you're a sinner! May god have mercy on your soul.")
-            user_trigger_counts[user_id] = 0  # Reset the count for the user
-            role = message.guild.get_role(int(role_to_assign_id))
-            if role:
-                await message.author.add_roles(role)
-                # await message.channel.send(f"Role {role.name} has been assigned to {message.author.mention}")
-            return
+        if user_trigger_counts[user_id] == 1:
+            await message.reply(f"{message.author.mention}, May god have mercy on your corrupted soul.")
+            user_trigger_counts[user_id] = 0
+            if random.randint(1, 3) == 1:
+                timeout_duration = datetime.timedelta(minutes=1)
+                timeout_until = datetime.datetime.now(datetime.timezone.utc) + timeout_duration
+                await message.author.edit(communication_disabled_until=timeout_until)
+                await message.channel.send(f"But i dont. Goodbye {message.author.mention}")
         else:
-            await message.channel.send(f"No. {message.author.mention} {counter}")
-            return
+            await message.reply(f"No. {counter}, bad dog {message.author.mention}.")
+
+#   # Specific replies in allowed channels for targeted users
+#   if str(message.channel.id) in allowed_channels:
+#       if str(message.author.id) in target:
+#           await message.reply("you are a meanie head.")
+#       elif str(message.author.id) in secondtarget:
+#           await message.reply("Thank you for standing with me in the face of the dictator sam. /j (obviously)")
 
     await bot.process_commands(message)
 
-
 @bot.slash_command(description="Echoes back what you say.")
 async def echo(ctx, message: Option(str, "Enter the message to echo")):
-    if any(word.lower() in message.lower() for word in trigger_words):
-        await ctx.respond(f"No. {ctx.author.mention} Bad dog.")
-    else:
-        await ctx.respond(message)
-
+    await ctx.respond(message)
 
 @bot.slash_command(description="Terminates the bot")
 async def suicide(ctx):
@@ -66,6 +70,4 @@ async def suicide(ctx):
     else:
         await ctx.respond("You are not permitted to execute this command.")
 
-
-# Run the bot
 bot.run(TOKEN)
